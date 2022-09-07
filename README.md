@@ -1,4 +1,6 @@
 ![GitHub](https://img.shields.io/github/license/dwikiramdhani53/measurenary)
+[![Documentation Status](https://readthedocs.org/projects/measurenary/badge/?version=latest)](https://measurenary.readthedocs.io/en/latest/?badge=latest)
+
 
 # Measurenary
 
