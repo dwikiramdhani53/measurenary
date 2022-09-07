@@ -21,7 +21,7 @@ sys.path.insert(0, pathlib.Path(__file__).parents[2].resolve().as_posix())
 import sphinx
 
 
-project = 'Besimilarity'
+project = 'Measurenary'
 copyright = '2022, Muhammad Dwiki Ramdhani'
 author = 'Muhammad Dwiki Ramdhani'
 
