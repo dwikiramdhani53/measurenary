@@ -1,0 +1,5 @@
+furo==2021.11.16
+sphinx==4.2.0
+readthedocs-sphinx-search==0.1.1
+measurenary
+autodocsumm

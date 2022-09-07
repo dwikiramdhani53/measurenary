@@ -1,0 +1,2 @@
+.. automodule:: measurenary.similarity
+    :members:
