@@ -16,7 +16,7 @@ To get started, you can import the library and use the `AgglomerativeBestMeasure
 ```python
    import measurenary
 
-   # Instatntiate a Besimlarity object
+   # Instatntiate a Measurenary object
    aggbs = measurenary.AgglomerativeBestMeasure()
    
    # Call the fit function
