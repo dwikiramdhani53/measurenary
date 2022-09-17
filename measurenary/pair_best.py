@@ -135,21 +135,21 @@ class PairBestMeasure():
         if not isinstance(use_seed, bool):
             raise Exception('use_seed must be boolean')
 
-        # set up index start and end
-        index_start = 0
-        index_end = df.shape[0]
-
-        # check num sample
-        if not isinstance(num_sample, int):
-            raise ValueError('num_sample must be integer')
-        if num_sample > df.shape[0]:
-            raise ValueError('num_sample must be smaller than df.shape[0]')
-        if num_sample <= 0:
-            raise ValueError('num_sample must be greater than 0')
-        
         # check df is pandas dataframe
         if not isinstance(df, pd.DataFrame):
             raise Exception('df must be pandas dataframe')
+
+        # check num sample
+        if not isinstance(num_sample, int):
+            raise Exception('num_sample must be integer')
+        if num_sample > df.shape[0]:
+            raise Exception('num_sample must be smaller than df.shape[0]')
+        if num_sample <= 0:
+            raise Exception('num_sample must be greater than 0')
+        
+        # set up index start and end
+        index_start = 0
+        index_end = df.shape[0]
         
         # print all parameters
         print('use_seed: ', use_seed)
