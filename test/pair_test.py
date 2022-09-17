@@ -26,9 +26,9 @@ class TestPairBestMeasure(unittest.TestCase):
     def test_df(self):
         with self.assertRaises(Exception):
             for _df in self.df_false:
-                self.pair_best.fit(_df)
+                self.pair_best.fit(_df, num_sample=2)
 
-        self.pair_best.fit(self.df)
+        self.pair_best.fit(self.df, num_sample=2)
         self.assertIsInstance(self.pair_best.get_result(), pd.DataFrame)
 
     def test_use_seed(self):

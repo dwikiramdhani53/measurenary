@@ -38,13 +38,9 @@ class TestAgglomerativeBestMeasure(unittest.TestCase):
             with self.assertRaises(Exception):
                 self.agglomerative_best.fit(self.df, _n_clusters)
 
-        for _n_clusters in self.n_clusters[3:5]:
+        for _n_clusters in self.n_clusters[3:]:
             self.agglomerative_best.fit(self.df, _n_clusters)
             self.assertIsInstance(self.agglomerative_best.get_result(), pd.DataFrame)
-
-        for _n_clusters in self.n_clusters[5:]:
-            with self.assertRaises(ValueError):
-                self.agglomerative_best.fit(self.df, _n_clusters)
 
     def test_affinity(self):
         for _affinity in self.affinity_string[:4]:
