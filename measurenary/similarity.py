@@ -1295,7 +1295,7 @@ def consonni_and_todeschini_v(a, b, c, d, n):
         warnings.warn(RuntimeWarning('some value in confusion matrix is not integer'))
 
     try:
-        result = (np.log(1+a*d) - np.log(1+b*c))/np.log(1+(n^2)/4)
+        result = (np.log(1+a*d) - np.log(1+b*c))/np.log(1+(n**2)/4)
         return result
     except:
         return None
@@ -1312,7 +1312,7 @@ def scott(a, b, c, d, n):
         warnings.warn(RuntimeWarning('some value in confusion matrix is not integer'))
 
     try:
-        result = (4*a*d - (b+c)^2) / ((2*a+b+c)*(2*d+b+c))
+        result = (4*a*d - (b+c)**2) / ((2*a+b+c)*(2*d+b+c))
         return result
     except:
         return None
@@ -1390,7 +1390,7 @@ def ARI(a, b, c, d, n):
         C = a*c + b*d
         D = a*d + b*c
         A = N-B-C-D
-        result = (abs(N*(A+D) - abs((A+B)*(A+C) + (C+D)*(B+D))))/abs(N^2 - abs((A+B)*(A+C) + (C+D)*(B+D)))
+        result = (abs(N*(A+D) - abs((A+B)*(A+C) + (C+D)*(B+D))))/abs(N**2 - abs((A+B)*(A+C) + (C+D)*(B+D)))
         return result
     except:
         return None
@@ -1407,7 +1407,7 @@ def loevingers_H(a, b, c, d, n):
         warnings.warn(RuntimeWarning('some value in confusion matrix is not integer'))
 
     try:
-        p1 = max(a. b) + max(c, d) + max(a, c) + max(b, d)
+        p1 = max(a, b) + max(c, d) + max(a, c) + max(b, d)
         p2 = max(a+c, b+d) + max(a+b, c+d)
         result = 1 - (b/(n*p1*p2))
         return result
@@ -1461,23 +1461,6 @@ def harris_and_lahey(a, b, c, d, n):
 
     try:
         result = (2*(2*d+b+c)/(2*(a+b+c)) + d*(2*a+b+c)/(2*(b+c+d)))
-        return result
-    except:
-        return None
-
-def tetrachoric(a, b, c, d, n):
-    """
-    Tetrachoric coefficient from contingency table.
-    """
-    if a < 0 or b < 0 or c < 0 or d < 0 or n < 0:
-        raise ValueError('value in confusion matrix cannot less than zero')
-
-    # raise warning if a, b, c, d or n is not integer
-    if not isinstance(a, int) or not isinstance(b, int) or not isinstance(c, int) or not isinstance(d, int) or not isinstance(n, int):
-        warnings.warn(RuntimeWarning('some value in confusion matrix is not integer'))
-
-    try:
-        result = np.cos((180)/(1+sqrt((a*d)/(b*c))))
         return result
     except:
         return None
