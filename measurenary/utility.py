@@ -76,12 +76,12 @@ def minMaxNormalization(df):
 
     Parameters
     ----------
-    df : pandas.DataFrame or list
+    df : pandas.DataFrame, list, or pandas.Series
         dataframe to be normalized
 
     Returns
     -------
-    pandas.DataFrame
+    pandas.DataFrame (np.array if list or pandas.Series)
         normalized dataframe
 
     Examples
@@ -97,7 +97,7 @@ def minMaxNormalization(df):
     2  1.0  1.0
     """
     # if input is list
-    if isinstance(df, list):
+    if isinstance(df, list) or isinstance(df, pd.Series):
         _array = np.array(df)
         output = (_array - min(_array))/(max(_array) - min(_array))
 
