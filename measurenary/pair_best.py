@@ -7,7 +7,7 @@ This module contains classes to find the best similarity/distance equation based
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import confusion_matrix, roc_curve, auc
+from sklearn.metrics import confusion_matrix, roc_auc_score
 from tqdm.autonotebook import tqdm
 import random
 import measurenary.similarity as sim
@@ -79,7 +79,7 @@ class PairBestMeasure():
                 _sim = []
                 for _, f in enumerate(self.f_sim):
                     try:
-                        sim = f(cm[3], cm[2], cm[1], cm[0], sum(cm))
+                        sim = f(cm[3], cm[1], cm[2], cm[0], sum(cm))
                         if sim == None: 
                             sim = np.nan
                             nan_value_equation.append(f.__name__ + ' similarity')
@@ -92,7 +92,7 @@ class PairBestMeasure():
 
                 for _, f in enumerate(self.f_dis):
                     try:
-                        dis = 1 - (f(cm[3], cm[2], cm[1], cm[0], sum(cm)))**2
+                        dis = 1 - (f(cm[3], cm[1], cm[2], cm[0], sum(cm)))**2
                         if dis == None:
                             dis = np.nan
                             nan_value_equation.append(f.__name__ + ' distance')
@@ -168,6 +168,20 @@ class PairBestMeasure():
         # create a dataframe from _find_confusion_matrix list result
         res_df = pd.DataFrame(res_arr, columns=['i', 'j', 'confussion_matrix', 'is_match'] + name_f_sim + name_f_dis)
 
+        # get value of similarity/distance measurement
+        sim_df = pd.DataFrame(res_df.iloc[:, 4:], columns=name_f_sim + name_f_dis)
+
+        # change inf and -inf value to np.nan
+        sim_df.replace([np.inf, -np.inf], np.nan, inplace=True)
+
+        # get column name that has nan in sim_df and drop it
+        column_nan = sim_df.columns[sim_df.isnull().any()].tolist()
+        sim_df.drop(column_nan, axis=1, inplace=True)
+
+        # add column name that has nan
+        nan_value_equation = list(nan_value_equation)
+        nan_value_equation += column_nan
+
         # print excluded equation that produce nan
         if len(nan_value_equation) != 0:
             name_f_sim = [e for e in name_f_sim if e not in nan_value_equation]
@@ -175,27 +189,6 @@ class PairBestMeasure():
             print(UserWarning('{} not included, it produce nan value'.format(nan_value_equation)))
             # remove column
             res_df.drop(list(nan_value_equation), axis=1, inplace=True)
-
-        # get value of similarity/distance measurement
-        sim_df = pd.DataFrame(res_df.iloc[:, 4:], columns=name_f_sim + name_f_dis)
-
-        # get column name that has nan in sim_df and drop it
-        column_nan = sim_df.columns[sim_df.isnull().any()].tolist()
-        sim_df.drop(column_nan, axis=1, inplace=True)
-
-        # change dtype to float for better calculation
-        sim_df = sim_df.astype(float)
-
-        # get column name that has inf value and drop it
-        column_inf = sim_df.columns[np.isinf(sim_df).any()].tolist()
-        sim_df.drop(column_inf, axis=1, inplace=True)
-
-        # # normalize dataframe
-        # scaled_sim_df = minMaxNormalization(sim_df)
-        # # combine normalized dataframe with is_match column
-        # scaled_sim_df = pd.concat([scaled_sim_df, res_df['is_match']], axis=1)
-        # _column_nan = scaled_sim_df.columns[scaled_sim_df.isnull().any()].to_list()
-        # scaled_sim_df.drop(_column_nan, axis=1, inplace=True)
 
         # test without scaling
         sim_df = pd.concat([sim_df, res_df['is_match']], axis=1)
@@ -229,9 +222,10 @@ class PairBestMeasure():
 
             _auc_list = []
             for column in combined_df.drop('is_match', axis=1).columns:
-                # print(combined_df.drop('is_match', axis=1)[column])
-                fpr, tpr, _ = roc_curve(combined_df['is_match'].astype(int), combined_df.drop('is_match', axis=1)[column])
-                roc_auc = auc(fpr, tpr)
+                # compute min max score
+                score = minMaxNormalization(combined_df[column])
+
+                roc_auc = roc_auc_score(combined_df['is_match'].astype(int), score)
                 _auc_list.append(roc_auc)
             
             auc_list.append(_auc_list)
@@ -244,7 +238,6 @@ class PairBestMeasure():
         self.res_arr = res_arr
         self.res_df = res_df
         self.sim_df = sim_df
-        # self.scaled_sim_df = scaled_sim_df
         self.auc_arr = auc_arr
         self.auc_df = auc_df
         self.seed_list = seed_list
