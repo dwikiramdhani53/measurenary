@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "measurenary"
 version = "1.0.0"
-dynamic = ["readme"]
+dynamic = ["README.md"]
 authors = [
     {name = "Muhammad Dwiki Ramdhani", email = "mdramdha@gmail.com"},
     {name = "Sony Hartono Wijaya", email = "shwjy@gmail.com"},
