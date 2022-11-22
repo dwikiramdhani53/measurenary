@@ -1,4 +1,4 @@
-![GitHub](https://img.shields.io/github/license/dwikiramdhani53/measurenary)
+![PyPI - License](https://img.shields.io/pypi/l/measurenary)
 [![Documentation Status](https://readthedocs.org/projects/measurenary/badge/?version=latest)](https://measurenary.readthedocs.io/en/latest/?badge=latest)
 
 
