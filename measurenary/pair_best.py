@@ -29,7 +29,7 @@ class PairBestMeasure():
     result_count : int, optional
         Set the number of result to show. The default is 5.
     """
-    def __init__(self, show_result = False, result_count = 5):
+    def __init__(self, show_result: bool = False, result_count: int = 5):
         # set up all similarity and dissimilarity equation
         self.f_sim = [val for _, val in sim.__dict__.items() if callable(val)][6:]
         self.f_dis = [val for _, val in dis.__dict__.items() if callable(val)][3:]
@@ -38,7 +38,7 @@ class PairBestMeasure():
         self.result_count = result_count
         self.show_result = show_result
 
-    def _find_confusion_matrix(self, df_source, index_start, index_end):
+    def _find_confusion_matrix(self, df_source: pd.DataFrame, index_start: int, index_end: int) -> np.ndarray:
         """
         method to generate a confusion matrix and similarity/distance results from every record pair in data binary dataframe on specific index.
 
@@ -56,9 +56,10 @@ class PairBestMeasure():
         list
             List of confusion matrix and similarity/distance values.
         """
-        # initiate return list
-        res_list = []
-        nan_value_equation = []
+        # # initiate return list
+        row_total = index_end//2 * (1 + index_end)
+        res_list = np.zeros((row_total,4+len(self.f_dis + self.f_sim)), dtype=object)
+        counter = 0
 
         # loop for every row in data
         for index, row in tqdm(df_source.iloc[index_start:, :].iterrows()):
@@ -72,9 +73,7 @@ class PairBestMeasure():
                 ## 1 if match
                 ## 0 if it doesn't match
                 is_match = True if int(df_source.iloc[index, -1]) == int(df_source.iloc[_index, -1]) else False
-                if not isinstance(is_match, bool):
-                    print(index, _index, is_match)
-                
+
                 # calculate the similarity/distance value based on confusion matrix before
                 _sim = []
                 for _, f in enumerate(self.f_sim):
@@ -82,12 +81,9 @@ class PairBestMeasure():
                         sim = f(cm[3], cm[1], cm[2], cm[0], sum(cm))
                         if sim == None: 
                             sim = np.nan
-                            nan_value_equation.append(f.__name__ + ' similarity')
-                            # continue
                     except:
                         sim = np.nan
-                        nan_value_equation.append(f.__name__ + ' similarity')
-                        # continue
+
                     _sim.append(sim)
 
                 for _, f in enumerate(self.f_dis):
@@ -95,20 +91,14 @@ class PairBestMeasure():
                         dis = 1 - (f(cm[3], cm[1], cm[2], cm[0], sum(cm)))**2
                         if dis == None:
                             dis = np.nan
-                            nan_value_equation.append(f.__name__ + ' distance')
-                            # continue
                     except:
                         dis = np.nan
-                        nan_value_equation.append(f.__name__ + ' distance')
-                        # continue
                     _sim.append(dis)
 
                 # combine confusion matrix and similarity/distance result
-                res_list.append([index, _index, cm.ravel(), is_match] + _sim)
-        
-        return res_list, set(nan_value_equation)
+                yield [index, _index, cm.ravel(), is_match] + _sim
 
-    def fit(self, df, use_seed=False, num_sample=20, **kwargs):
+    def fit(self, df: pd.DataFrame, use_seed: bool = False, num_sample: int = 20, **kwargs):
         """
         Train data to generate a suitable similarity/distance equation.
 
@@ -142,25 +132,17 @@ class PairBestMeasure():
         # check num sample
         if not isinstance(num_sample, int):
             raise Exception('num_sample must be integer')
-        if num_sample > df.shape[0]:
-            raise Exception('num_sample must be smaller than df.shape[0]')
         if num_sample <= 0:
             raise Exception('num_sample must be greater than 0')
         
         # set up index start and end
         index_start = 0
         index_end = df.shape[0]
-        
-        # print all parameters
-        print('use_seed: ', use_seed)
-        print('num_sample: ', num_sample)
-        print()
 
-        # get number of record
-        n_row = len(df)
-
-        res_list, nan_value_equation = self._find_confusion_matrix(df, index_start, index_end)
+        res_list = list(self._find_confusion_matrix(df, index_start, index_end))
         res_arr = np.array(res_list, dtype=object)
+
+        # print(res_arr.shape)
 
         # set up equation function name
         name_f_sim, name_f_dis = self.name_f_sim, self.name_f_dis
@@ -179,18 +161,15 @@ class PairBestMeasure():
         sim_df.drop(column_nan, axis=1, inplace=True)
 
         # add column name that has nan
-        nan_value_equation = list(nan_value_equation)
-        nan_value_equation += column_nan
+        nan_value_equation = column_nan
 
         # print excluded equation that produce nan
         if len(nan_value_equation) != 0:
             name_f_sim = [e for e in name_f_sim if e not in nan_value_equation]
             name_f_dis = [e for e in name_f_dis if e not in nan_value_equation]
-            print(UserWarning('{} not included, it produce nan value'.format(nan_value_equation)))
             # remove column
             res_df.drop(list(nan_value_equation), axis=1, inplace=True)
 
-        # test without scaling
         sim_df = pd.concat([sim_df, res_df['is_match']], axis=1)
 
         # separate is_match from scaled_sim_df to true_df and false_df
@@ -235,19 +214,18 @@ class PairBestMeasure():
         auc_df['mean_auc']  = auc_df.iloc[:, 1:].astype(float).mean(axis=1)
         auc_df = auc_df.sort_values(by='mean_auc', ascending=False, ignore_index=True)
 
-        self.res_arr = res_arr
         self.res_df = res_df
         self.sim_df = sim_df
-        self.auc_arr = auc_arr
         self.auc_df = auc_df
         self.seed_list = seed_list
+        self.nan_value_equation = nan_value_equation
 
         # print result if self.show_result is True
         if self.show_result:
             print('\nfinal {} best similarity: '.format(str(self.result_count)))
             print(auc_df[['sim/dis name', 'mean_auc']].head(self.result_count))
 
-    def get_result(self, csv = False):
+    def get_result(self, csv: bool = False) -> pd.DataFrame:
         """
         Get result of training.
 

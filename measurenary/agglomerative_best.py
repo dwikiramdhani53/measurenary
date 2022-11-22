@@ -14,6 +14,7 @@ from sklearn.metrics import confusion_matrix, homogeneity_completeness_v_measure
 from sklearn.metrics.cluster import adjusted_rand_score
 from scipy.cluster.hierarchy import fclusterdata
 from tqdm.autonotebook import tqdm
+from typing import Union
 
 # class to get best similarity/distance measurement based on Agglomerative Clustering Algorithm
 class AgglomerativeBestMeasure():
@@ -28,7 +29,7 @@ class AgglomerativeBestMeasure():
         The number of result to print out. The default is 5.
     """
 
-    def __init__(self, show_result = False, result_count = 5):
+    def __init__(self, show_result: bool = False, result_count: int = 5):
         # set up all similarity and distance equation
         self.f_sim = [val for _, val in sim.__dict__.items() if callable(val)][6:]
         self.f_dis = [val for _, val in dis.__dict__.items() if callable(val)][3:]
@@ -37,7 +38,7 @@ class AgglomerativeBestMeasure():
         self.show_result = show_result
         self.result_count = result_count
 
-    def fit(self, df, n_clusters = 2, affinity = 'all', linkage = 'all', use_sampling = 'none', sample_rate = 0.1, **kwargs):
+    def fit(self, df: pd.DataFrame, n_clusters = 2, affinity = 'all', linkage = 'all', use_sampling = 'none', sample_rate = 0.1, **kwargs):
         """
         Fit data with Agglomerative Clustering.
         
@@ -68,16 +69,6 @@ class AgglomerativeBestMeasure():
         # check seed
         if 'seed' in kwargs:
             seed = kwargs['seed']
-
-        # print df shape, n_clusters, affinity, linkage
-        print('\ndf shape: ', df.shape)
-        print('n_clusters: ', n_clusters)
-        print('affinity: ', affinity)
-        print('linkage: ', linkage)
-        print('use_sampling: ', use_sampling)
-        if use_sampling.lower() != 'none':
-            print('sample_rate: ', sample_rate)
-        print('\n')
 
        # check if df is DataFrame
         if not isinstance(df, pd.DataFrame):
@@ -242,7 +233,7 @@ class AgglomerativeBestMeasure():
             print(self.linkage_df.head(self.result_count))
 
     # function to print out the result of linkage
-    def get_result(self):
+    def get_result(self, csv: bool = False) -> pd.DataFrame:
         """
         Return the result of best similarity equation that match with the best linkage
         
@@ -251,5 +242,9 @@ class AgglomerativeBestMeasure():
         result_df : pandas.DataFrame
             Dataframe that contains the result of best similarity equation that match with the best linkage
         """
-        # print(self.linkage_df)
+        if self.linkage_df.empty:
+            raise Exception('Fit your data first with \'fit\' method')
+        if csv:
+            self.linkage_df.to_csv('result.csv', index=False)
+
         return self.linkage_df  
