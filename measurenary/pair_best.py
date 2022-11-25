@@ -58,17 +58,15 @@ class PairBestMeasure():
         """
         # # initiate return list
         row_total = index_end//2 * (1 + index_end)
-        res_list = np.zeros((row_total,4+len(self.f_dis + self.f_sim)), dtype=object)
-        counter = 0
 
         # loop for every row in data
         for index, row in tqdm(df_source.iloc[index_start:, :].iterrows()):
             if index == index_end:
                 break
             # print('sample', index, 'of', index_end)
-            for _index, _row in df_source.iloc[index+1:, :].iterrows():
+            for _index, _row in tqdm(df_source.iloc[index+1:, :].iterrows(), leave=False):
                 # generate a confusion matrix
-                cm = confusion_matrix(row.to_list(), _row.to_list()).ravel()
+                cm = confusion_matrix(row[:-1].to_list(), _row[:-1].to_list()).ravel()
                 # match the reference column
                 ## 1 if match
                 ## 0 if it doesn't match
@@ -192,10 +190,12 @@ class PairBestMeasure():
             # handle imbalance data
             if n_true <= n_false:
                 sample_index = random.sample(range(0, n_false), n_true)
+                # sample_index = list(range(n_true))
                 false_sample_df = false_df.iloc[sample_index, :]
                 combined_df = pd.concat([true_df, false_sample_df])
             else:
                 sample_index = random.sample(range(0, n_true), n_false)
+                # sample_index = list(range(n_false))
                 true_sample_df = true_df.iloc[sample_index, :]
                 combined_df = pd.concat([true_sample_df, false_df])
 
